@@ -6,20 +6,30 @@ var StepStore = require('../stores/step_store.js');
 
 var TodoListItem = React.createClass({
   getInitialState: function(){
-    return {shown: false};
+    return {shown: false, steps: []};
   },
 
   toggleView: function() {
     this.setState({shown: !this.state.shown});
   },
 
+  stepsChanged: function() {
+    this.setState({steps: StepStore.all(this.props.todo.id)});
+  },
+
+  componentDidMount: function(){
+    StepStore.addChangedHandler(this.stepsChanged);
+    console.log(this);
+    StepStore.fetch(this.props.todo.id);
+  },
+
   render: function() {
     var details;
-    console.log(this.props.todo);
-    console.log(StepStore.all(this.props.todo.id));
+    // console.log(this.props.todo);
+    // console.log("ho");
 
     if (this.state.shown) {
-      details = <TodoDetailView body={this.props.todo.body} id={this.props.todo.id} steps={this.props.todo.steps}/>;
+      details = <TodoDetailView body={this.props.todo.body} id={this.props.todo.id} steps={this.state.steps}/>;
     } else {
       details = <div></div>;
     }

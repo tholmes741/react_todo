@@ -10,7 +10,7 @@ var StepStore = {
     });
   },
 
-  addChangeHandler: function(cb) {
+  addChangedHandler: function(cb) {
     _callbacks.push(cb);
   },
 
