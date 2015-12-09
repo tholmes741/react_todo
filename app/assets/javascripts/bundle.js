@@ -19728,6 +19728,7 @@
 	var React = __webpack_require__(2);
 	var TodoListItem = __webpack_require__(161);
 	var TodoForm = __webpack_require__(162);
+	var StepStore = __webpack_require__(165);
 	
 	var TodoList = React.createClass({
 	  displayName: 'TodoList',
@@ -19775,6 +19776,7 @@
 	var TodoStore = __webpack_require__(1);
 	var DoneButton = __webpack_require__(163);
 	var TodoDetailView = __webpack_require__(164);
+	var StepStore = __webpack_require__(165);
 	
 	var TodoListItem = React.createClass({
 	  displayName: 'TodoListItem',
@@ -19789,9 +19791,11 @@
 	
 	  render: function () {
 	    var details;
+	    console.log(this.props.todo);
+	    console.log(StepStore.all(this.props.todo.id));
 	
 	    if (this.state.shown) {
-	      details = React.createElement(TodoDetailView, { body: this.props.todo.body, id: this.props.todo.id });
+	      details = React.createElement(TodoDetailView, { body: this.props.todo.body, id: this.props.todo.id, steps: this.props.todo.steps });
 	    } else {
 	      details = React.createElement('div', null);
 	    }
@@ -19910,6 +19914,8 @@
 	var React = __webpack_require__(2);
 	var TodoListItem = __webpack_require__(161);
 	var TodoStore = __webpack_require__(1);
+	var StepStore = __webpack_require__(165);
+	var Step = __webpack_require__(166);
 	
 	var TodoDetailView = React.createClass({
 	  displayName: 'TodoDetailView',
@@ -19919,6 +19925,11 @@
 	  },
 	
 	  render: function () {
+	    console.log(this.props);
+	    var steps = this.props.steps.map(function (step, idx) {
+	      return React.createElement(Step, { body: step.body, status: step.done, index: idx });
+	    });
+	
 	    return React.createElement(
 	      'div',
 	      null,
@@ -19926,6 +19937,11 @@
 	        'div',
 	        null,
 	        this.props.body
+	      ),
+	      React.createElement(
+	        'ol',
+	        null,
+	        steps
 	      ),
 	      React.createElement(
 	        'button',
@@ -19937,6 +19953,128 @@
 	});
 	
 	module.exports = TodoDetailView;
+
+/***/ },
+/* 165 */
+/***/ function(module, exports) {
+
+	var _steps = {};
+	var _callbacks = [];
+	
+	var StepStore = {
+	  fetch: function (todoId) {
+	
+	    $.get('/api/todos/' + todoId + '/steps', {}, function (steps) {
+	      _steps[todoId] = steps;
+	      StepStore.changed();
+	    });
+	  },
+	
+	  addChangeHandler: function (cb) {
+	    _callbacks.push(cb);
+	  },
+	
+	  removeChangeHandler: function (cb) {
+	    var idx = _callbacks.indexOf(cb);
+	    if (idx > 0) {
+	      _callbacks.splice(idx, 1);
+	    }
+	  },
+	
+	  changed: function () {
+	    _callbacks.forEach(function (cb) {
+	      cb();
+	    });
+	  },
+	
+	  toggleDone: function (id) {
+	    var step = StepStore.find(id);
+	    step.done = !step.done;
+	
+	    $.ajax({
+	      type: "PATCH",
+	      url: "/api/steps/" + id,
+	      data: { step: step },
+	      success: function () {
+	        StepStore.changed();
+	      }
+	    });
+	  },
+	
+	  all: function (todoId) {
+	    return _steps[todoId];
+	  },
+	
+	  create: function (data) {
+	    $.post('/api/todos/' + data.todoId + '/steps', { step: data }, function (step) {
+	      _steps[data.todoId].push(step);
+	      StepStore.changed();
+	    });
+	  },
+	
+	  find: function (id) {
+	    var allSteps = [];
+	    Object.keys(_steps).forEach(function (key) {
+	      allSteps = allSteps.concat(_steps[key]);
+	    });
+	    return allSteps.find(function (step) {
+	      return step.id === id;
+	    });
+	  },
+	
+	  update: function (id) {
+	    var step = StepStore.find(id);
+	    $.ajax({
+	      type: 'PATCH',
+	      url: '/api/steps/' + id,
+	      data: { step: step },
+	      success: function () {
+	        StepStore.changed();
+	      }
+	    });
+	  },
+	
+	  destroy: function (id) {
+	    var step = StepStore.find(id);
+	    var todoId = step.todoId;
+	    var idx = _steps[todoId].indexOf(step);
+	    $.ajax({
+	      type: 'DELETE',
+	      url: '/api/steps/' + id,
+	      data: { step: step },
+	      success: function () {
+	        _steps[todoId].splice(idx, 1);
+	        StepStore.changed();
+	      }
+	    });
+	  }
+	
+	};
+	
+	module.exports = StepStore;
+
+/***/ },
+/* 166 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(2);
+	var StepStore = __webpack_require__(165);
+	
+	var Step = React.createClass({
+	  displayName: 'Step',
+	
+	  render: function () {
+	    return React.createElement(
+	      'li',
+	      { key: this.props.key },
+	      this.props.body,
+	      ': ',
+	      this.props.status
+	    );
+	  }
+	});
+	
+	module.exports = Step;
 
 /***/ }
 /******/ ]);

@@ -1,6 +1,7 @@
-class StepsController < ApplicationController
+class Api::StepsController < ApplicationController
   def index
-    todo = Todo.find(params[:id])
+    puts params[:todo_id]
+    todo = Todo.find(params[:todo_id])
     render json: todo.steps
   end
 
@@ -27,5 +28,5 @@ class StepsController < ApplicationController
   def step_params
     params.require(:step).permit(:body)
   end
-  
+
 end

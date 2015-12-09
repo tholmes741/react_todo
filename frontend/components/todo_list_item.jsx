@@ -2,6 +2,7 @@ var React = require('react');
 var TodoStore = require('../stores/todo_store.js');
 var DoneButton = require('./done_button.jsx');
 var TodoDetailView = require('./todo_detail_view.jsx');
+var StepStore = require('../stores/step_store.js');
 
 var TodoListItem = React.createClass({
   getInitialState: function(){
@@ -14,9 +15,11 @@ var TodoListItem = React.createClass({
 
   render: function() {
     var details;
+    console.log(this.props.todo);
+    console.log(StepStore.all(this.props.todo.id));
 
     if (this.state.shown) {
-      details = <TodoDetailView body={this.props.todo.body} id={this.props.todo.id} />;
+      details = <TodoDetailView body={this.props.todo.body} id={this.props.todo.id} steps={this.props.todo.steps}/>;
     } else {
       details = <div></div>;
     }

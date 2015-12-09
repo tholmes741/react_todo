@@ -3,6 +3,7 @@ var _callbacks = [];
 
 var StepStore = {
   fetch: function(todoId) {
+
     $.get('/api/todos/' + todoId + '/steps', {}, function(steps){
        _steps[todoId] = steps;
        StepStore.changed();
@@ -23,6 +24,20 @@ var StepStore = {
   changed: function() {
     _callbacks.forEach(function(cb) {
       cb();
+    });
+  },
+
+  toggleDone: function(id) {
+    var step = StepStore.find(id);
+    step.done = !step.done;
+
+    $.ajax({
+      type: "PATCH",
+      url: "/api/steps/" + id,
+      data: {step: step},
+      success: function(){
+        StepStore.changed();
+      }
     });
   },
 
@@ -77,3 +92,5 @@ var StepStore = {
 
 
 };
+
+module.exports = StepStore;

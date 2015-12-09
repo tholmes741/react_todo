@@ -2,6 +2,7 @@ var TodoStore = require('../stores/todo_store.js');
 var React = require('react');
 var TodoListItem = require('./todo_list_item.jsx');
 var TodoForm = require('./todo_form.jsx');
+var StepStore = require('../stores/step_store.js');
 
 
 var TodoList = React.createClass({
